@@ -7,7 +7,7 @@
           <router-link
             :to="{ name: 'restaurant', params: { id: restaurant.id }}"
           >{{ restaurant.name }}</router-link>&nbsp;
-          <small>{{ restaurant.Category.name }}</small>
+          <small>{{ restaurant.Category.name}}</small>
         </h4>
         <p>{{ restaurant.description }}</p>
         {{ restaurant.createdAt | fromNow}}

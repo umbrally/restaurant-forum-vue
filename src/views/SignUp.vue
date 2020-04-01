@@ -58,7 +58,11 @@
         />
       </div>
 
-      <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">Submit</button>
+      <button
+        class="btn btn-lg btn-primary btn-block mb-3"
+        type="submit"
+        :disabled="isProcessing"
+      >Submit</button>
 
       <div class="text-center mb-3">
         <p>
@@ -72,6 +76,8 @@
 </template>
 
 <script>
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
 export default {
   name: "SignUp",
   data() {
@@ -79,21 +85,70 @@ export default {
       name: "",
       email: "",
       password: "",
-      passwordCheck: ""
+      passwordCheck: "",
+      isProcessing: false
     };
   },
 
   methods: {
-    handleSubmit(e) {
-      const data = JSON.stringify({
-        name: this.name,
-        email: this.email,
-        password: this.password,
-        passwordCheck: this.passwordCheck
-      });
+    async handleSubmit(e) {
+      try {
+        this.isProcessing = true;
+        if (!this.name) {
+          Toast.fire({
+            icon: "warning",
+            title: "請填寫名字"
+          });
+          return;
+        } else if (!this.email) {
+          Toast.fire({
+            icon: "warning",
+            title: "請填寫email"
+          });
+          return;
+        } else if (!this.password) {
+          Toast.fire({
+            icon: "warning",
+            title: "請填寫密碼"
+          });
+          return;
+        } else if (!this.passwordCheck) {
+          Toast.fire({
+            icon: "warning",
+            title: "請重複輸入密碼"
+          });
+          return;
+        } else if (this.password !== this.passwordCheck) {
+          Toast.fire({
+            icon: "warning",
+            title: "兩次輸入密碼不同，請再輸入一次"
+          });
+          return;
+        }
 
-      // TODO: 向後端驗證使用者登入資訊是否合法
-      console.log("data", data);
+        const dataForm = {
+          name: this.name,
+          email: this.email,
+          password: this.password,
+          passwordCheck: this.passwordCheck
+        };
+
+        // TODO: 向後端驗證使用者登入資訊是否合法
+        console.log("data", dataForm);
+        const { data, statusText } = await usersAPI.signUp(dataForm);
+        if (statusText !== "OK" || data.status !== "success") {
+          throw new Error(statusText);
+        }
+        console.log("response", data);
+        this.$router.push({ name: "sign-in" });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "輸入資料有誤"
+        });
+        this.isProcessing = false;
+        console.log("error", error);
+      }
     }
   }
 };

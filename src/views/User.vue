@@ -27,7 +27,7 @@ import UserCommentsCard from "./../components/UserCommentsCard.vue";
 import UserFavoritedRestaurantsCard from "./../components/UserFavoritedRestaurantsCard.vue";
 const dummyUser = {
   currentUser: {
-    id: 5,
+    id: 1,
     name: "管理者",
     email: "root@example.com",
     image: "https://i.pravatar.cc/300",

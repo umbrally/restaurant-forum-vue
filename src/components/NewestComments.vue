@@ -5,11 +5,11 @@
       <div v-for="comment in comments" :key="comment.id">
         <h4>
           <router-link
-            :to="{ name: 'restaurant', params: {id: comment.Restaurant.id}}"
+            :to="{ name: 'restaurant', params: {id: comment.RestaurantId}}"
           >{{ comment.Restaurant.name }}</router-link>
         </h4>
         <p>{{comment.text}}</p>by
-        <router-link :to="{name:'user', params:{id: comment.User.id}}">{{comment.User.name}}</router-link>
+        <router-link :to="{name:'user', params:{id: comment.UserId}}">{{comment.User.name}}</router-link>
         {{ comment.createdAt | fromNow}}
         <hr />
       </div>

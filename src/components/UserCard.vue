@@ -10,14 +10,21 @@
         v-if="user.isFollowed"
         type="button"
         class="btn btn-danger"
-        @click.stop.prevent="deleteFollow"
+        @click.stop.prevent="removeFollowing(user.id)"
       >取消追蹤</button>
-      <button v-else type="button" class="btn btn-primary" @click.stop.prevent="addFollow">追蹤</button>
+      <button
+        v-else
+        type="button"
+        class="btn btn-primary"
+        @click.stop.prevent="addFollowing(user.id)"
+      >追蹤</button>
     </p>
   </div>
 </template>
 
 <script>
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
 export default {
   filters: {
     defalutPhoto(image) {
@@ -37,17 +44,65 @@ export default {
     };
   },
   methods: {
-    addFollow() {
-      this.user = {
-        ...this.user, // 保留餐廳內原有資料
-        isFollowed: true
-      };
+    async addFollowing(userId) {
+      try {
+        const { data, statusText } = await usersAPI.addFollowing({
+          userId
+        });
+
+        if (statusText !== "OK" || data.status !== "success") {
+          throw new Error(statusText);
+        }
+        console.log("aaa", this.user);
+        this.user = this.user
+          .map(user => {
+            if (user.id !== userId) {
+              return user;
+            }
+
+            return {
+              ...user,
+              FollowerCount: user.FollowerCount + 1,
+              isFollowed: true
+            };
+          })
+          .sort((a, b) => b.FollowerCount - a.FollowerCount);
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法加入追蹤，請稍後再試"
+        });
+      }
     },
-    deleteFollow() {
-      this.user = {
-        ...this.user, // 保留餐廳內原有資料
-        isFollowed: false
-      };
+    async removeFollowing(userId) {
+      try {
+        const { data, statusText } = await usersAPI.deleteFollowing({
+          userId
+        });
+
+        if (statusText !== "OK" || data.status !== "success") {
+          throw new Error(statusText);
+        }
+
+        this.user = this.user
+          .map(user => {
+            if (user.id !== userId) {
+              return user;
+            }
+
+            return {
+              ...user,
+              FollowerCount: user.FollowerCount - 1,
+              isFollowed: false
+            };
+          })
+          .sort((a, b) => b.FollowerCount - a.FollowerCount);
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法取消追蹤，請稍後再試"
+        });
+      }
     }
   }
 };
