@@ -24,6 +24,8 @@
 <script>
 import moment from "moment";
 import { fromNowFilter } from "./../utils/mixins";
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
 const dummyUser = {
   currentUser: {
     id: 1,
@@ -48,11 +50,24 @@ export default {
     };
   },
   methods: {
-    handleDeleteButtonClick(commentId) {
-      console.log("handleDeleteButtonClick", commentId);
-      // TODO: 請求 API 伺服器刪除 id 為 commentId 的評論
-      // 觸發父層事件 - $emit( '事件名稱' , 傳遞的資料 )
-      this.$emit("after-delete-comment", commentId);
+    async handleDeleteButtonClick(commentId) {
+      try {
+        console.log("handleDeleteButtonClick", commentId);
+        // TODO: 請求 API 伺服器刪除 id 為 commentId 的評論
+        const { data, statusText } = await usersAPI.deleteComment({
+          commentId
+        });
+        if (statusText !== "OK" || data.status !== "success") {
+          throw new Error(statusText);
+        }
+        // 觸發父層事件 - $emit( '事件名稱' , 傳遞的資料 )
+        this.$emit("after-delete-comment", commentId);
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法刪除評論，請稍後再試"
+        });
+      }
     }
   }
 };
