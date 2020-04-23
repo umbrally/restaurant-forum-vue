@@ -1,52 +1,32 @@
 import { apiHelper } from './../utils/helpers'
-const getToken = () => localStorage.getItem('token')
 
 export default {
   getCurrentUser() {
-    return apiHelper.get(`/get_current_user`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.get(`/get_current_user`)
   },
   get({ userId }) {
-    console.log('bbb', userId)
-    return apiHelper.get(`/users/${userId}`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.get(`/users/${userId}`)
   },
   addFavorite({ restaurantId }) {
-    return apiHelper.post(`/favorite/${restaurantId}`, null, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.post(`/favorite/${restaurantId}`, null)
   },
   deleteFavorite({ restaurantId }) {
-    return apiHelper.delete(`/favorite/${restaurantId}`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.delete(`/favorite/${restaurantId}`)
   },
   addLike({ restaurantId }) {
-    return apiHelper.post(`/like/${restaurantId}`, null, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.post(`/like/${restaurantId}`, null)
   },
   deleteLike({ restaurantId }) {
-    return apiHelper.delete(`/like/${restaurantId}`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.delete(`/like/${restaurantId}`)
   },
   getTopUsers() {
-    return apiHelper.get('/users/top', {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.get('/users/top')
   },
   addFollowing({ userId }) {
-    return apiHelper.post(`/following/${userId}`, null, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.post(`/following/${userId}`, null)
   },
   deleteFollowing({ userId }) {
-    return apiHelper.delete(`/following/${userId}`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.delete(`/following/${userId}`)
   },
   signUp({ name, email, password, passwordCheck }) {
     return apiHelper.post('/signup', {
@@ -60,13 +40,9 @@ export default {
     return apiHelper.post(`/comments`, {
       text,
       restaurantId
-    }, {
-      headers: { Authorization: `Bearer ${getToken()}` }
     })
   },
   deleteComment({ commentId }) {
-    return apiHelper.delete(`/comments/${commentId}`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-    })
+    return apiHelper.delete(`/comments/${commentId}`)
   }
 }

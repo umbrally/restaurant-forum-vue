@@ -1,49 +1,53 @@
 <template>
   <div class="container py-5">
     <NavTabs />
-    <h1 class="mt-5">美食達人</h1>
-    <hr />
-    <div class="row text-center">
-      <!-- <UserCard v-for="user in users" :key="user.id" :initialUser="user" /> -->
-      <div v-for="user in users" :key="user.id" class="col-3">
-        <a href="#">
-          <img :src="user.image | defalutPhoto" width="140px" height="140px" />
-        </a>
-        <h2>{{user.name}}</h2>
-        <span class="badge badge-secondary">追蹤人數：{{user.FollowerCount}}</span>
-        <p class="mt-3">
-          <button
-            v-if="user.isFollowed"
-            type="button"
-            class="btn btn-danger"
-            @click.stop.prevent="removeFollowing(user.id)"
-          >取消追蹤</button>
-          <button
-            v-else
-            type="button"
-            class="btn btn-primary"
-            @click.stop.prevent="addFollowing(user.id)"
-          >追蹤</button>
-        </p>
+    <Spinner v-if="isLoading" />
+    <template v-else>
+      <h1 class="mt-5">美食達人</h1>
+      <hr />
+      <div class="row text-center">
+        <!-- <UserCard v-for="user in users" :key="user.id" :initialUser="user" /> -->
+        <div v-for="user in users" :key="user.id" class="col-3">
+          <a href="#">
+            <img :src="user.image | defalutPhoto" width="140px" height="140px" />
+          </a>
+          <h2>{{user.name}}</h2>
+          <span class="badge badge-secondary">追蹤人數：{{user.FollowerCount}}</span>
+          <p class="mt-3">
+            <button
+              v-if="user.isFollowed"
+              type="button"
+              class="btn btn-danger"
+              @click.stop.prevent="removeFollowing(user.id)"
+            >取消追蹤</button>
+            <button
+              v-else
+              type="button"
+              class="btn btn-primary"
+              @click.stop.prevent="addFollowing(user.id)"
+            >追蹤</button>
+          </p>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script>
 import NavTabs from "./../components/NavTabs";
-// import UserCard from "./../components/UserCard";
 import usersAPI from "./../apis/users";
 import { Toast } from "./../utils/helpers";
+import Spinner from "./../components/Spinner";
 
 export default {
   components: {
-    NavTabs
-    // UserCard
+    NavTabs,
+    Spinner
   },
   data() {
     return {
-      users: []
+      users: [],
+      isLoading: true
     };
   },
   filters: {
@@ -64,7 +68,9 @@ export default {
           throw new Error(statusText);
         }
         this.users = data.users;
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得美食達人，請稍後再試"

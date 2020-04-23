@@ -1,6 +1,7 @@
 <template>
   <div class="container py-5">
-    <div class="row">
+    <Spinner v-if="isLoading" />
+    <div v-else class="row">
       <div class="col-md-12 mb-1">
         <h1>{{restaurant.name}}</h1>
         <p class="badge badge-secondary mt-1 mb-3">{{restaurant.Category.name}}</p>
@@ -10,7 +11,7 @@
         <li>有 {{restaurant.Comments.length}} 筆評論</li>
         <li>有 {{restaurant.FavoritedUsers.length}} 人收藏這家餐廳</li>
       </ul>
-      <router-link :to="{ name: 'restaurant', params: { id: restaurant.id }}">回上一頁</router-link>
+      <a href="#" @click="$router.back()">回上一頁</a>
     </div>
   </div>
 </template>
@@ -18,11 +19,16 @@
 <script>
 import restaurantsAPI from "./../apis/restaurants";
 import { Toast } from "./../utils/helpers";
+import Spinner from "./../components/Spinner";
 
 export default {
+  components: {
+    Spinner
+  },
   data() {
     return {
-      restaurant: {}
+      restaurant: {},
+      isLoading: true
     };
   },
   created() {
@@ -36,6 +42,7 @@ export default {
   methods: {
     async fetchRestaurant(restaurantId) {
       try {
+        this.isLoading = true;
         const { data, statusText } = await restaurantsAPI.getRestaurant({
           restaurantId
         });
@@ -51,7 +58,9 @@ export default {
           this.restaurant.Comments.length,
           this.restaurant.FavoritedUsers.length
         );
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得餐廳資料，請稍後再試"

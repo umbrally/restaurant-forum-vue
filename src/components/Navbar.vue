@@ -24,7 +24,11 @@
             :to="{name:'user', params:{id: currentUser.id}}"
             class="text-white mr-3"
           >{{ currentUser.name || '使用者' }} 您好</router-link>
-          <button type="button" class="btn btn-sm btn-outline-success my-2 my-sm-0">登出</button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-success my-2 my-sm-0"
+            @click="logout"
+          >登出</button>
         </template>
       </div>
     </div>
@@ -37,6 +41,29 @@ import { mapState } from "vuex";
 export default {
   computed: {
     ...mapState(["currentUser", "isAuthenticated"])
+  },
+  methods: {
+    logout() {
+      this.$store.commit("revokeAuthentication");
+      this.$router.push("/signin");
+    }
   }
 };
 </script>
+
+<style scoped>
+.navbar-toggler {
+  min-width: 70px;
+  margin-right: 0;
+}
+
+nav.bg-dark {
+  padding: 14px 16px;
+  background-color: #bd2333 !important;
+}
+
+.navbar-brand {
+  font-size: 19px;
+  padding: 0;
+}
+</style>

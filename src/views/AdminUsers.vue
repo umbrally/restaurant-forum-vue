@@ -2,7 +2,8 @@
   <div class="container py-5">
     <!-- AdminNav Component -->
     <AdminNav />
-    <table class="table">
+    <Spinner v-if="isLoading" />
+    <table v-else class="table">
       <thead class="thead-dark">
         <tr>
           <th scope="col">#</th>
@@ -20,7 +21,8 @@
             <button
               type="button"
               class="btn btn-link"
-              @click.stop.prevent="changeRole(user.id)"
+              :disabled="isProcessing"
+              @click.stop.prevent="changeRole(user.id,user.isAdmin)"
             >set as {{!user.isAdmin | checkRole}}</button>
           </td>
         </tr>
@@ -30,112 +32,15 @@
 </template>
 <script>
 import AdminNav from "@/components/AdminNav";
-const dummyData = {
-  users: [
-    {
-      id: 1,
-      name: "root",
-      email: "root@example.com",
-      password: "$2a$10$J9pLpJJ1Tzfe/ZcjdYwXdumyh.3F5E.w/HTxRcH./cl3azhgekgQe",
-      isAdmin: true,
-      image: null,
-      createdAt: "2020-02-28T14:38:32.000Z",
-      updatedAt: "2020-03-02T17:09:40.000Z"
-    },
-    {
-      id: 2,
-      name: "user1",
-      email: "user1@example.com",
-      password: "$2a$10$NyaAtgRuHx3i7hHlnb5IXOC4Uk4.q1J1iQs3op.ymdCEh7.tOwcH2",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-02-28T14:38:32.000Z",
-      updatedAt: "2020-03-05T12:30:53.000Z"
-    },
-    {
-      id: 3,
-      name: "user2",
-      email: "user2@example.com",
-      password: "$2a$10$VHKmtPqbcUzK46qxLllqj.w506U2N2TObMmnpdlNG2CLZPa1xzuTi",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-02-28T14:38:32.000Z",
-      updatedAt: "2020-03-02T16:01:50.000Z"
-    },
-    {
-      id: 62,
-      name: "AC",
-      email: "ac@ac.com",
-      password: "$2a$10$yB01LxQAujWjRQ0WaprYV.t5SDx6kool5Cmrt0F7TRSXGRk.W8z1m",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-02-29T15:41:09.000Z",
-      updatedAt: "2020-02-29T15:41:09.000Z"
-    },
-    {
-      id: 72,
-      name: "mohammad akhbarati",
-      email: "makhbarati@gmail.com",
-      password: "$2a$10$ljaWKqtQwgLA5BdTEhBTHeJK/Ku4ow3IHM4S5OJYmr7.anBAIl7NW",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-02-29T23:24:32.000Z",
-      updatedAt: "2020-02-29T23:24:32.000Z"
-    },
-    {
-      id: 82,
-      name: "aaa",
-      email: "aaa@aaa",
-      password: "$2a$10$tKDZYhuLyqqwiWqILKWygewD8m9w8LXtMVux1iRaa8CMVsWJa5ma.",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-03-08T14:50:18.000Z",
-      updatedAt: "2020-03-08T14:50:18.000Z"
-    },
-    {
-      id: 92,
-      name: "asdasd",
-      email: "asdasd@asdasd.asdasd",
-      password: "$2a$10$J4Z/hkxNtpZYM0mj/eCaM.bBRTtTC4yOwISf4d..ia9sdB0ym/9yO",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-03-08T17:38:03.000Z",
-      updatedAt: "2020-03-08T17:38:03.000Z"
-    },
-    {
-      id: 102,
-      name: "asd@asd.asd",
-      email: "asd@asd.asd",
-      password: "$2a$10$r9jgmPQGI2uN59XwkuTiX.qRORpqYDoMg8e36WJ.bw1JexPvpXVp.",
-      isAdmin: false,
-      image: "https://i.imgur.com/yJTFCDh.jpg",
-      createdAt: "2020-03-09T06:15:49.000Z",
-      updatedAt: "2020-03-09T06:16:09.000Z"
-    },
-    {
-      id: 112,
-      name: "測試",
-      email: "123@example.com",
-      password: "$2a$10$oJlwrpCT8jAC2Kamet775u3kNbd.SV85yvHH9c/L2bKODZ437Cn/K",
-      isAdmin: false,
-      image: null,
-      createdAt: "2020-03-12T15:28:49.000Z",
-      updatedAt: "2020-03-12T15:28:49.000Z"
-    }
-  ],
-  currentUser: {
-    id: 1,
-    name: "管理者",
-    email: "root@example.com",
-    image: "https://i.pravatar.cc/300",
-    isAdmin: true
-  },
-  isAuthenticated: true
-};
+import adminAPI from "./../apis/admin";
+import { Toast } from "./../utils/helpers";
+import Spinner from "./../components/Spinner";
+import { mapState } from "vuex";
 
 export default {
   components: {
-    AdminNav
+    AdminNav,
+    Spinner
   },
   filters: {
     checkRole(isAdmin) {
@@ -145,22 +50,49 @@ export default {
   data() {
     return {
       users: [],
-      currentUser: {}
+      isLoading: true,
+      isProcessing: false
     };
+  },
+  computed: {
+    ...mapState(["currentUser"])
   },
   created() {
     this.fetchUsers();
   },
   methods: {
-    fetchUsers() {
-      this.users = dummyData.users;
-      this.currentUser = dummyData.currentUser;
+    async fetchUsers() {
+      try {
+        const { data, statusText } = await adminAPI.users.get();
+        if (statusText !== "OK") {
+          throw new Error(statusText);
+        }
+        this.users = data.users;
+        this.isLoading = false;
+      } catch (error) {
+        this.isLoading = false;
+        Toast.fire({ icon: "error", title: "無法讀取使用者清單，請稍後再試" });
+      }
     },
-    changeRole(userId) {
-      this.users = this.users.map(user => {
-        if (user.id !== userId) return user;
-        return { ...user, isAdmin: !user.isAdmin };
-      });
+    async changeRole(userId, isAdmin) {
+      try {
+        this.isProcessing = true;
+        const { data, statusText } = await adminAPI.users.changeRole({
+          userId,
+          isAdmin: (!isAdmin).toString()
+        });
+        if (statusText !== "OK" || data.status !== "success") {
+          throw new Error(statusText);
+        }
+        this.users = this.users.map(user => {
+          if (user.id !== userId) return user;
+          return { ...user, isAdmin: !user.isAdmin };
+        });
+        this.isProcessing = false;
+      } catch (error) {
+        this.isProcessing = false;
+        Toast.fire({ icon: "error", title: "無法修改使用者，請稍後再試" });
+      }
     }
   }
 };
